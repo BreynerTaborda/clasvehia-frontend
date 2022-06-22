@@ -1,6 +1,7 @@
 import Styled from 'styled-components'
 import { useState } from 'react'
 import { Button, Col, Form, Row } from 'react-bootstrap'
+import CargaImagenServices from '../../services/carga-imagen-service'
 
 
 const StyledContainer = Styled.div`
@@ -10,13 +11,6 @@ const StyledContainer = Styled.div`
         border-radius: 25%;
     }
 `
-
-const handleClick = async  () =>{
-    const endpoint = '/api/hello';
-    const response = await fetch(endpoint);
-    const result = await response.json()
-    alert(`El tipo vehiculo es: ${result.name}`)
-}
 
 const CargaImagenes = (props) => {
     const { addToast } = props
@@ -28,6 +22,10 @@ const CargaImagenes = (props) => {
     const [hasImage, setHasImage] = useState(false)
     const [previewImage, setPreviewImage] = useState({})
     const [errors, setErrors] = useState({});
+
+    const [previewImagenClasificada, setPreviewImagenClasificada] = useState({})
+    const [imagenClasificadaBase64, setImagenClasificadaBase64] = useState("");
+    const [hasImagenClasificada, setHasImagenClasificada] = useState(false)
 
     // Tratamiento de imagen
     const [fileBase64String, setFileBase64String] = useState("");
@@ -70,12 +68,26 @@ const CargaImagenes = (props) => {
     }
 
     const onSubmitFile = (values) => {
-        // console.log({
-        //     fileName: values.file.name,
-        //     type: values.file.type,
-        //     size: `${values.file.size} bytes`
-        // })
+        console.log({imagePet, hasImage, previewImage, fileBase64String})
+        const paramas = {
+            imagenBase64: fileBase64String.split(",")[1]
+        }
+        CargaImagenServices.clasificarImagen(paramas, ({data}) => {
+            setPreviewImagenClasificada(`data:image/jpeg;base64,${data}`);
+            setImagenClasificadaBase64(data);
+            setHasImagenClasificada(true)
+            console.log({data})
+        }, function (error) {
+            console.log(error);
+        });
     }
+
+    // const handleClick = async  () =>{
+    //     const endpoint = '/api/hello';
+    //     const response = await fetch(endpoint);
+    //     const result = await response.json()
+    //     alert(`El tipo vehiculo es: ${result.name}`)
+    // }
 
     return (
         <StyledContainer>
@@ -106,18 +118,25 @@ const CargaImagenes = (props) => {
                         <div textAlign="center">
                             {imagePet.name &&
                                 <div className='col-m12' width={16}>
-                                    <img src={previewImage} centered circular size="large" />
+                                    <img width={550} height={550} src={previewImage} centered circular size="large" />
                                 </div>
                             }
                         </div>
                     </Col>
                      <Col>
                         <div className='col-m12'>
-                            <Button variant="primary" type='submit' onClick={handleClick}>
+                            <Button variant="primary" type='submit' onClick={onSubmitFile}>
                                 Validar tipo vehículo
                             </Button>
                         </div>
                         <h1>La separacion</h1>
+                        <div textAlign="center">
+                            {hasImagenClasificada &&
+                                <div className='col-m12' width={16}>
+                                    <img width={550} height={550} src={previewImagenClasificada} centered circular size="large" />
+                                </div>
+                            }
+                        </div>
                      </Col>       
                 </Row>
                 <br></br>
