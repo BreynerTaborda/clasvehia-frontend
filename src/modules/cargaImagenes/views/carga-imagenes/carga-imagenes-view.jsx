@@ -25,7 +25,8 @@ const CargaImagenes = (props) => {
 
     const [previewImagenClasificada, setPreviewImagenClasificada] = useState({})
     const [imagenClasificadaBase64, setImagenClasificadaBase64] = useState("");
-    const [hasImagenClasificada, setHasImagenClasificada] = useState(false)
+    const [procesandoImagen, setProcesandoImagen] = useState(false);
+    const [hasImagenClasificada, setHasImagenClasificada] = useState(false);
 
     // Tratamiento de imagen
     const [fileBase64String, setFileBase64String] = useState("");
@@ -68,6 +69,8 @@ const CargaImagenes = (props) => {
     }
 
     const onSubmitFile = (values) => {
+        setProcesandoImagen(true);
+        setHasImagenClasificada(false);
         console.log({imagePet, hasImage, previewImage, fileBase64String})
         const paramas = {
             imagenBase64: fileBase64String.split(",")[1]
@@ -75,9 +78,12 @@ const CargaImagenes = (props) => {
         CargaImagenServices.clasificarImagen(paramas, ({data}) => {
             setPreviewImagenClasificada(`data:image/jpeg;base64,${data}`);
             setImagenClasificadaBase64(data);
-            setHasImagenClasificada(true)
+            setHasImagenClasificada(true);
             console.log({data})
+            setProcesandoImagen(false);
         }, function (error) {
+            setProcesandoImagen(false);
+            alert("Ocurrio un error");
             console.log(error);
         });
     }
@@ -129,7 +135,8 @@ const CargaImagenes = (props) => {
                                 Validar tipo vehículo
                             </Button>
                         </div>
-                        <h1>La separacion</h1>
+                        {procesandoImagen && <h1>Procesando imagen...</h1> || ""}
+                        {/* <h1>La separacion</h1> */}
                         <div textAlign="center">
                             {hasImagenClasificada &&
                                 <div className='col-m12' width={16}>
